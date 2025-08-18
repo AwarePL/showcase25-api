@@ -1,90 +1,129 @@
-# Showcase: Backend API Test Automation with Code Generation
+# Pet Store API Tests
 
-This project is a modern backend API test automation framework that demonstrates the power of generating a TypeScript client directly from an OpenAPI (Swagger) specification. It uses `openapi-typescript-codegen` to eliminate manual boilerplate code, ensuring the test suite is always in sync with the API.
+## 1. 💡 Introduction & Core Idea
 
-The framework targets the public PetStore v3 API and follows best practices like SOLID, DRY, and the Arrange-Act-Assert pattern.
+This project contains a suite of automated API tests for the Swagger Petstore API (`https://petstore.swagger.io/v2`). The primary goal is to validate the functionality of the API endpoints related to pets, the store, and users.
 
-## ✨ Features
+The tests are designed to ensure that the API behaves as expected under various conditions, covering creation, retrieval, updating, and deletion of data (CRUD operations), as well as handling of invalid data. The project utilizes `vitest` as the testing framework and `ofetch` for making HTTP requests.
 
-- **Zero-Boilerplate API Client**: The TypeScript API client is **100% auto-generated** from the OpenAPI spec using `openapi-typescript-codegen`.
-- **Modern Tech Stack**: TypeScript, Node.js (ESM), and Vitest for a fast and reliable testing experience.
-- **Always in Sync**: Regenerate the client with a single command (`yarn generate:api`) to instantly adapt to any API changes.
-- **Best Practices**: Adheres to Arrange-Act-Assert, DRY, and SOLID principles for clean and maintainable tests.
-- **Scalable Structure**: A clear separation of concerns with generated services, test data factories, and utility functions.
-- **Code Quality**: Enforced by ESLint and Prettier using modern "flat config".
-- **CI/CD Ready**: Includes a GitHub Actions workflow for automated testing and JUnit report generation.
+## 2. 📁 Project Structure
 
----
+The project is organized into the following main directories:
 
-## 🚀 Getting Started
+```
+.
+├── .github/workflows/  # Contains CI/CD configuration (GitHub Actions)
+├── src/                # Source code, including test data and utilities
+│   ├── data/           # Mock data for tests (pets, store, user)
+│   └── utils/          # Helper functions for tests
+└── tests/              # Contains all the test files (specs)
+    ├── generic.spec.ts # Generic API health checks
+    ├── pets.spec.ts    # Tests for the /pet endpoint
+    ├── store.spec.ts   # Tests for the /store endpoint
+    └── user.spec.ts    # Tests for the /user endpoint
+```
 
-### Prerequisites
+- **`src/data/`**: Holds predefined data structures used to create requests in the tests.
+- **`src/utils/`**: Includes utility functions, such as `retry` logic for handling transient network issues.
+- **`tests/`**: Contains the actual test suites, separated by API resource (`pet`, `store`, `user`).
+- **`.github/workflows/`**: Defines a GitHub Action that automatically runs the tests on every push to the repository.
 
-- Node.js (v18 or newer)
+## 3. 📚 Libraries and Technologies Used
+
+This project relies on several key libraries:
+
+| Library               | Version  | Description                                                                                              |
+| :-------------------- | :------- | :------------------------------------------------------------------------------------------------------- |
+| **Vitest**            | `^1.6.0` | A blazing fast unit test framework powered by Vite. Used for writing and running the test suites.        |
+| **Ofetch**            | `^1.4.1` | A better fetch API. A lightweight, promise-based HTTP client for making requests.                        |
+| **TypeScript**        | `^5.2.2` | A strongly typed programming language that builds on JavaScript, giving you better tooling at any scale. |
+| **@faker-js/faker**   | `^8.4.1` | A library for generating massive amounts of fake data. Used for creating unique test data.               |
+| **ESLint & Prettier** | -        | Used for code linting and formatting to maintain consistent code style.                                  |
+
+## 4. 🚀 Setup and Usage
+
+To get the project up and running, follow these steps:
+
+**Prerequisites:**
+
+- Node.js (v18 or higher)
 - Yarn package manager
 
-### Installation & Setup
+**1. Clone the repository:**
 
-1.  **Clone the repository:**
+```bash
+git clone https://github.com/AwarePL/showcase25-api.git
+```
 
-    ```bash
-    git clone [https://github.com/AwarePL/showcase25-api.git](https://github.com/AwarePL/showcase25-api.git)
-    cd showcase-backend-tests
-    ```
+**2. Install dependencies:**
 
-2.  **Install dependencies:**
+```bash
+yarn install
+```
 
-    ```bash
-    yarn install
-    ```
+_This command will install all the necessary packages defined in `package.json`._
 
-3.  **Set up environment variables:**
-    Create a `.env` file in the root of the project by copying the `.env.example` file. Add your API credentials:
+**3. Set up environment variables:**
+The project requires a `.env` file with the base URL of the API. You can create one by copying the example file:
 
-    ```
-    # API Configuration
-    API_BASE_URL="[https://petstore3.swagger.io/api/v3](https://petstore3.swagger.io/api/v3)"
-    API_KEY="special-key"
-    ```
+```bash
+cp example-env .env
+```
 
-4.  **Generate the API Client:**
-    This is a crucial first step. The command will fetch the latest OpenAPI spec and generate the entire TypeScript client in the `src/generated/api` directory.
+The `.env` file should contain:
 
-    ```bash
-    yarn generate:api
-    ```
+```
+BASE_URL=https://petstore.swagger.io/v2
+```
 
----
+**4. Run the tests:**
+Execute the following command to run all the test suites:
 
-## 🧪 Running Tests
+```bash
+yarn test
+```
 
-- **Run all tests once:**
-  This command will execute the test suite and generate a `junit.xml` report.
+## 5. 🔄 Continuous Integration (CI)
 
-  ```bash
-  yarn test
-  ```
+This project uses **GitHub Actions** for Continuous Integration. The workflow, defined in `.github/workflows/apiTests.yml`, is triggered on every `push` to the repository. It consists of two main jobs:
 
-Run tests in interactive watch mode:
-This is ideal for development, as tests will re-run automatically on file changes.
+**Job 1: Test Execution (`test`)**
 
-yarn test:watch
+This job runs the test suite in parallel to speed up the process.
 
-Update the API Client:
-If the API has changed, simply run the generation command again to update your client code.
+1.  **Parallel Execution**: The job is configured to run on 4 parallel instances (shards). This significantly reduces the total execution time.
+2.  **Setup**: It checks out the code, sets up Node.js, and installs dependencies.
+3.  **Environment Configuration**: It securely creates a `.env` file using secrets stored in GitHub.
+4.  **Run Sharded Tests**: Each parallel instance runs a fraction of the test suite (`yarn test --shard=...`).
+5.  **Generate Reports**: Each instance generates a JUnit XML report for its subset of tests.
+6.  **Upload Artifacts**: The generated JUnit reports are uploaded as artifacts, making them available for the next job.
 
-yarn generate:api
+**Job 2: Reporting (`report`)**
 
-📂 Project Structure
-The project structure is designed to be lean and scalable, with a clear separation between generated code, test data, and the tests themselves.
+This job runs after all the `test` shards are complete, even if some of them failed.
 
-/
-├── .github/workflows/ # GitHub Actions CI configuration
-├── src/
-│ ├── generated/api/ # Auto-generated API client (DO NOT EDIT MANUALLY)
-│ ├── data/ # Test data factories (e.g., petData.ts)
-│ └── utils/ # Reusable utility functions (e.g., retry.ts)
-├── tests/ # Test files (`.spec.ts`)
-├── .env # Local environment variables (ignored by Git)
-├── eslint.config.js # Modern ESLint "flat" configuration
-└── vitest.config.ts # Vitest configuration
+1.  **Download Artifacts**: It downloads and merges all the JUnit reports from the parallel test jobs.
+2.  **Publish GitHub Report**: It uses the merged reports to generate a detailed test summary directly in the GitHub Actions UI.
+3.  **Upload to TestBeats**: The same reports are sent to **TestBeats**, an external test reporting and analytics service.
+
+## 6. 📊 Results Analysis & Reporting
+
+Test results are available in two places after the CI pipeline completes:
+
+**1. GitHub Actions Summary**
+
+A summary of the test run is published directly on the GitHub Actions page for the specific workflow run. This provides a quick overview of which tests passed or failed.
+
+- **PASS**: Indicates that the API endpoint responded as expected.
+- **FAIL**: Indicates a problem. The report will include details about the failure, such as incorrect status codes or response bodies.
+
+**2. TestBeats Dashboard**
+
+For more in-depth analysis and historical tracking, results are sent to **TestBeats**. This platform provides:
+
+- **Historical Data**: Track the success and failure rate of tests over time.
+- **Performance Metrics**: Analyze the duration of test runs to identify performance regressions.
+- **Flakiness Detection**: Identify tests that are unstable (sometimes passing, sometimes failing).
+- **Centralized Dashboard**: A single place to view and analyze test results across all runs.
+
+This dual-reporting approach provides both immediate feedback within the development workflow and long-term insights into the health and stability of the API.

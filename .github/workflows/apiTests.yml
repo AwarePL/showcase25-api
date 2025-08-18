@@ -1,0 +1,74 @@
+name: Run API tests
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'yarn'
+
+      - name: Create .env file from secrets
+        run: |
+          echo "API_BASE_URL=${{ secrets.API_BASE_URL }}" >> .env
+          echo "API_KEY=${{ secrets.API_KEY }}" >> .env
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Generate API client from schema
+        run: yarn generate:api
+
+      - name: Run tests on shard ${{ matrix.shard }}
+        run: yarn test --shard=${{ matrix.shard }}/${{ strategy.job-total }} --reporter=junit --outputFile=test-results/junit-shard-${{ matrix.shard }}.xml
+        continue-on-error: true
+
+      - name: Upload JUnit report for shard ${{ matrix.shard }}
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-report-shard-${{ matrix.shard }}
+          path: test-results/junit-shard-${{ matrix.shard }}.xml
+          retention-days: 1
+
+  report:
+    runs-on: ubuntu-latest
+    needs: test
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all JUnit reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: junit-report-shard-*
+          path: test-results/
+          merge-multiple: true
+
+      - name: Verify downloaded files for debugging
+        run: ls -R
+
+      - name: Publish Test Report to GitHub
+        uses: mikepenz/action-junit-report@v4
+        with:
+          report_paths: 'test-results/**/*.xml'
+          title: Vitest Results
+          check_name: Vitest Test Report
+
+      - name: Upload report to TestBeats
+        uses: test-results-reporter/publish@v1
+        with:
+          junit: 'test-results/**/*.xml'
+          api-key: ${{ secrets.TESTBEATS_API_KEY }}

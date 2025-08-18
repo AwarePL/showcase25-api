@@ -22,6 +22,7 @@
     "eslint-config-prettier": "^10.1.8",
     "openapi-typescript-codegen": "^0.29.0",
     "prettier": "^3.6.2",
+    "testbeats": "^2.2.8",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.39.1",
     "vitest": "^3.2.4"
