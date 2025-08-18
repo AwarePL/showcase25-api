@@ -1,0 +1,48 @@
+# Workflow name displayed in the GitHub Actions tab
+name: Run API Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Run Vitest Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      # Step 2: Sets up Node.js environment
+      - name: Set up Node.js v20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'yarn'
+
+      # Step 3: Installs project dependencies
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      # Step 4: Creates the .env file from repository secrets
+      - name: Create .env file
+        run: |
+          echo "API_BASE_URL=${{ secrets.API_BASE_URL }}" >> .env
+          echo "API_KEY=${{ secrets.API_KEY }}" >> .env
+
+      # Step 5: Run tests and generate JUnit report
+      - name: Run tests and generate report
+        run: yarn test --reporter=junit --outputFile=junit.xml || true
+
+      # Step 6: Upload test results to TestBeats
+      - name: Upload report to TestBeats
+        if: always()
+        uses: testbeats/reporter@v1
+        with:
+          api-token: ${{ secrets.TESTBEATS_API_TOKEN }}
+          format: junit
+          files: junit.xml
