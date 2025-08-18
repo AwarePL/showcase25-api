@@ -8,7 +8,8 @@
     "test:watch": "vitest",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "generate:api": "openapi --input https://petstore3.swagger.io/api/v3/openapi.json --output ./src/generated/api --client fetch --useOptions"
   },
   "author": "AwarePL <lukasz@korchowiec.pl>",
   "license": "MIT",
@@ -18,6 +19,7 @@
     "dotenv": "^17.2.1",
     "eslint": "^9.33.0",
     "eslint-config-prettier": "^10.1.8",
+    "openapi-typescript-codegen": "^0.29.0",
     "prettier": "^3.6.2",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.39.1",

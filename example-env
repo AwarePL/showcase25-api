@@ -1,0 +1,10 @@
+# TestBeats Configuration
+TESTBEATS_API_KEY=your_api_key_here
+TESTBEATS_PROJECT_ID=your_project_id_here
+
+# API Configuration
+API_BASE_URL="https://petstore3.swagger.io/api/v3"
+API_AUTH_URL="https://petstore3.swagger.io/oauth/authorize"
+API_KEY=your_api_key_here
+API_USERNAME="test"
+API_PASSWORD="abc123"

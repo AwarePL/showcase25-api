@@ -140,3 +140,6 @@ vite.config.ts.timestamp-*
 
 # JUNIT XML reports
 *.xml
+
+# OpenAPI Generator files
+*/generated/api

@@ -1,24 +1,34 @@
 import { faker } from '@faker-js/faker'
+import { Pet } from '../generated/api'
 
+/**
+ * A utility object for generating dynamic and realistic test data for pets.
+ */
 export const petData = {
   /**
-   * Generates a new pet object with dynamic data.
-   * This is now a function to ensure fresh data is created for each test.
+   * Generates a new pet object with randomized data using the faker.js library.
+   * This function ensures that each test run uses a unique pet, preventing test interference.
+   * @returns {Pet} A new pet object conforming to the Pet schema.
    */
-  newPet: () => ({
-    id: faker.number.int({ min: 10000, max: 99999 }), // Generates a realistic, large integer ID
-    name: faker.animal.dog() + ' ' + faker.person.lastName(), // e.g., "Husky Smith"
+  newPet: (): Pet => ({
+    // Generates a realistic, large integer ID to avoid collisions.
+    id: faker.number.int({ min: 10000, max: 99999 }),
+    // Creates a fun, unique name like "Bulldog Smith".
+    name: `${faker.animal.dog()} ${faker.person.lastName()}`,
     category: {
       id: 1,
       name: 'Dogs',
     },
-    photoUrls: [faker.image.urlLoremFlickr({ category: 'dog' })], // Generates a random dog picture URL
+    // Provides a random dog picture URL.
+    photoUrls: [faker.image.urlLoremFlickr({ category: 'dog' })],
     tags: [
       {
-        id: 0,
-        name: faker.word.adjective(), // e.g., "playful"
+        id: 1,
+        // Assigns a random adjective as a tag, e.g., "playful".
+        name: faker.word.adjective(),
       },
     ],
-    status: 'available' as const,
+    // Sets the pet's status to 'available' by default.
+    status: Pet.status.AVAILABLE,
   }),
 }
